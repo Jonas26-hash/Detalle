@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Feliz cumpleaños, amorcito</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #000;
+      color: #fff;
+    }
+
+    #scene-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* PANTALLAS (auth, torta, corazón) */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* Contenedores de contenido (para permitir clics) */
+    .screen-content {
+      pointer-events: auto;
+      text-align: center;
+      max-width: 700px;
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(5, 5, 20, 0.7);
+      box-shadow: 0 0 30px rgba(255, 0, 150, 0.25);
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 3vw, 2.7rem);
+      text-shadow: 0 0 10px #ff8ad7, 0 0 24px #ff3fa9;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .big-text {
+      font-size: 1.05rem;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    /* AUTH */
+    .auth-card {
+      width: min(480px, 100%);
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .auth-questions {
+      margin-top: 18px;
+      text-align: left;
+      gap: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    input {
+      width: 100%;
+      margin-top: 4px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(10,10,25,0.85);
+      color: #fff;
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    input:focus {
+      border-color: #ff7bce;
+      box-shadow: 0 0 8px rgba(255,123,206,0.6);
+    }
+
+    .btn {
+      margin-top: 16px;
+      padding: 10px 24px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.98rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, #ff4fa9, #ffc0ff);
+      color: #170014;
+      box-shadow: 0 0 18px rgba(255, 79, 169, 0.6);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 0 24px rgba(255, 79, 169, 0.9);
+    }
+
+    .btn-secondary {
+      margin-top: 18px;
+      background: transparent;
+      color: #ffc0ff;
+      border: 1px solid rgba(255,192,255,0.5);
+      box-shadow: none;
+    }
+
+    .auth-message {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      opacity: 0.95;
+      min-height: 1.1em;
+    }
+
+    .auth-card.shake {
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* PANTALLA TORTA & FLORES */
+    .cake-content h2 {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 12px #ffc0ff;
+    }
+
+    .cake-age {
+      margin-top: 6px;
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+
+    .cake-text {
+      margin-top: 14px;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* HEART SCREEN */
+    .heart-content h2 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .heart-text {
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+
+    /* TEXTO EN REMOLINO PARA LA PANTALLA FINAL */
+    .ring-text-container {
+      position: fixed;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none; /* sólo en pantalla corazón */
+      align-items: center;
+      justify-content: center;
+      width: 320px;
+      height: 320px;
+      pointer-events: none;
+      perspective: 800px;
+      z-index: 2;
+    }
+
+    .ring-text-container.active {
+      display: flex;
+    }
+
+    .ring-text {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      letter-spacing: 0.28em;
+      text-align: center;
+      text-shadow: 0 0 14px rgba(255,255,255,0.9);
+      transform-origin: center center;
+      transform: rotateX(75deg) rotateZ(0deg);
+      white-space: nowrap;
+    }
+
+    .ring-text-outer {
+      width: 320px;
+      height: 320px;
+      font-size: 0.95rem;
+      opacity: 0.95;
+    }
+
+    .ring-text-middle {
+      width: 260px;
+      height: 260px;
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .ring-text-inner {
+      width: 200px;
+      height: 200px;
+      font-size: 0.75rem;
+      opacity: 0.75;
+    }
+
+    /* PIE DE PÁGINA */
+    .footer-message {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.9rem;
+      opacity: 0.9;
+      z-index: 2;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .footer-message span {
+      opacity: 0.7;
+      font-size: 0.8rem;
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* Audio (lo dejamos discreto) */
+    .audio-control {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 4;
+      opacity: 0.8;
+    }
+    .music-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: linear-gradient(135deg, #ff4fa9, #ffc0ff);
+  border: none;
+  border-radius: 50%;
+  width: 55px;
+  height: 55px;
+  color: #000;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(255, 79, 169, 0.6);
+  transition: 0.2s ease;
+}
+
+.music-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 25px rgba(255, 79, 169, 0.9);
+}
+
+  </style>
+</head>
+<body>
+  <div id="scene-container"></div>
+
+  <!-- Control de música (pondrás tu archivo de Photograph aquí) -->
+  <!-- Debes tener un archivo MP3 en la misma carpeta, por ejemplo "photograph.mp3" -->
+  <audio id="bgMusic" loop preload="auto">
+  <source src="photograph.mp3" type="audio/mpeg">
+</audio>
+<button id="musicToggle" class="music-btn">🔊</button>
+
+  <!-- PANTALLA 1: AUTENTICACIÓN ROMÁNTICA -->
+  <div id="screen-auth" class="screen active">
+    <div class="screen-content auth-card" id="authCard">
+      <h1>Hola, amorcito 💖</h1>
+      <p class="subtitle">
+        Antes de dejarte entrar a tu sorpresa, necesito comprobar<br>
+        que realmente eres <strong>la dueña de mi corazón</strong> 🥹✨
+      </p>
+
+      <div class="auth-questions">
+        <div>
+          <label for="q-month">1. ¿Cuál es el mes en que empezó nuestra relación? 💫</label>
+          <input id="q-month" type="text" placeholder="Escribe el mes en minúsculas" />
+        </div>
+        <div>
+          <label for="q-animal">2. ¿Cuál es mi animal favorito? 🐾</label>
+          <input id="q-animal" type="text" placeholder="Pista: es muy fiel y juguetón" />
+        </div>
+        <div>
+          <label for="q-keyword">3. Escribe la palabra mágica: ✨</label>
+          <input id="q-keyword" type="text" placeholder="Escribe: sí, te amo" />
+        </div>
+      </div>
+
+      <button class="btn" id="btnValidate">Entrar a mi sorpresa 🎁</button>
+      <div id="authMessage" class="auth-message"></div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: TORTA + FLORES + TEXTO BONITO -->
+  <div id="screen-cake" class="screen">
+    <div class="screen-content cake-content">
+      <h2>Hoy celebramos tu día, mi amor… 🎂✨</h2>
+      <div class="cake-age">Hoy cumples <strong>19 años</strong> y cada uno de ellos es un regalo para el mundo 💕</div>
+      <p class="cake-text">
+        Gracias por ser luz, alegría y paz en mi vida.<br>
+        Cada momento contigo vale oro…<br>
+        y hoy quiero regalarte un pedacito del universo que siento cuando te veo. 🌌
+      </p>
+      <button class="btn" id="btnGoHeart">Ver mi sorpresa final ❤️</button>
+      <button class="btn btn-secondary" id="btnReplayAuth">Volver a leer las preguntas 😜</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 3: CORAZÓN DE PARTÍCULAS -->
+  <div id="screen-heart" class="screen">
+    <div class="screen-content heart-content">
+      <h2>Este es mi corazón, hecho de un “te amo” 💓</h2>
+      <p class="heart-text">
+        Cada partícula que ves es un sentimiento, un pensamiento,<br>
+        un recuerdo bonito contigo. Y todos suben para llenar este corazón<br>
+        que, desde que te conocí, late diferente. 💗
+      </p>
+    </div>
+  </div>
+
+  <!-- Remolino de texto para la pantalla final -->
+  <div class="ring-text-container" id="ringTextContainer">
+    <div class="ring-text ring-text-outer" id="ringTextOuter">
+      TE AMO • TE AMO • TE AMO • TE AMO • TE AMO • TE AMO •
+    </div>
+    <div class="ring-text ring-text-middle" id="ringTextMiddle">
+      TE AMO • TE AMO • TE AMO • TE AMO • TE AMO •
+    </div>
+    <div class="ring-text ring-text-inner" id="ringTextInner">
+      TE AMO • TE AMO • TE AMO • TE AMO •
+    </div>
+  </div>
+
+  <div class="footer-message">
+    <div>Todo esto late al ritmo de lo que siento por ti 💓</div>
+    <span>De: El amor de tu vida</span>
+  </div>
+
+  <!-- THREE.js -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script>
+    /**************
+     *  PANTALLAS *
+     **************/
+    const screenAuth  = document.getElementById("screen-auth");
+    const screenCake  = document.getElementById("screen-cake");
+    const screenHeart = document.getElementById("screen-heart");
+
+    const authCard = document.getElementById("authCard");
+    const authMessage = document.getElementById("authMessage");
+    const btnValidate = document.getElementById("btnValidate");
+    const btnGoHeart = document.getElementById("btnGoHeart");
+    const btnReplayAuth = document.getElementById("btnReplayAuth");
+
+    const inputMonth   = document.getElementById("q-month");
+    const inputAnimal  = document.getElementById("q-animal");
+    const inputKeyword = document.getElementById("q-keyword");
+
+    const ringContainer = document.getElementById("ringTextContainer");
+    const ringOuter = document.getElementById("ringTextOuter");
+    const ringMiddle = document.getElementById("ringTextMiddle");
+    const ringInner = document.getElementById("ringTextInner");
+
+    const bgMusic = document.getElementById("bgMusic");
+
+    let currentMode = "auth"; // auth | cake | heart
+
+    function showScreen(name) {
+      currentMode = name;
+      screenAuth.classList.remove("active");
+      screenCake.classList.remove("active");
+      screenHeart.classList.remove("active");
+      ringContainer.classList.remove("active");
+
+      if (name === "auth") {
+        screenAuth.classList.add("active");
+      } else if (name === "cake") {
+        screenCake.classList.add("active");
+      } else if (name === "heart") {
+        screenHeart.classList.add("active");
+        ringContainer.classList.add("active");
+      }
+    }
+
+    function normalize(str) {
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")  // quita acentos
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+    }
+
+    btnValidate.addEventListener("click", () => {
+      const month = normalize(inputMonth.value);
+      const animal = normalize(inputAnimal.value);
+      const keyword = normalize(inputKeyword.value);
+
+      const okMonth = (month === "enero");
+      const okAnimal = (animal === "perro");
+      const okKeyword = (keyword === "si te amo");
+
+      if (okMonth && okAnimal && okKeyword) {
+        authMessage.textContent = "Sabía que eras tú 🥹💖, bienvenida a tu sorpresa...";
+        // reproducimos música (el navegador solo dejará si ya hubo interacción)
+        bgMusic.play().catch(() => {});
+        setTimeout(() => {
+          showScreen("cake");
+        }, 900);
+      } else {
+        let msg = "Ups, parece que te equivocaste un poquito 😝";
+        const hints = [];
+
+        if (!okMonth) {
+          hints.push("📅 Pista del mes: es el primer mes del año 😉");
+        }
+        if (!okAnimal) {
+          hints.push("🐾 Pista del animal: 🐶");
+        }
+        if (!okKeyword) {
+          hints.push("📝 Pista de la frase: empieza con “si...”");
+        }
+
+        authMessage.innerHTML = msg + "<br>" + hints.join("<br>");
+        authCard.classList.add("shake");
+        authCard.addEventListener("animationend", () => {
+          authCard.classList.remove("shake");
+        }, { once: true });
+      }
+    });
+
+    btnGoHeart.addEventListener("click", () => {
+      showScreen("heart");
+    });
+
+    btnReplayAuth.addEventListener("click", () => {
+      showScreen("auth");
+    });
+
+    /********************
+     *  ESCENA 3D TOTAL *
+     ********************/
+    let scene, camera, renderer;
+    let stars;
+    let cakeGroup, flowerGroup;
+    let heartGroup, heart, ringParticles, risingParticles;
+    let heartMaterial;
+    let risingStart = [];
+    let risingEnd = [];
+    let risingT = [];
+
+    const colorA = new THREE.Color(0xff0088);
+    const colorB = new THREE.Color(0xffc0ff);
+
+    const clock = new THREE.Clock();
+
+    initScene();
+    animate();
+
+    function initScene() {
+      const container = document.getElementById("scene-container");
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      const fov = 60;
+      const aspect = window.innerWidth / window.innerHeight;
+      camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 100);
+      camera.position.z = 5;
+      camera.position.y = 0.3;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      const light = new THREE.PointLight(0xff66cc, 2.2, 25);
+      light.position.set(0, 3, 6);
+      scene.add(light);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+      scene.add(ambient);
+
+      stars = createStarfield();
+      scene.add(stars);
+
+      // Torta + flores
+      cakeGroup = createCake();
+      scene.add(cakeGroup);
+
+      flowerGroup = createFlowers();
+      scene.add(flowerGroup);
+
+      // Corazón + anillo de partículas
+      heartGroup = new THREE.Group();
+      heart = createHeartParticles();
+      ringParticles = createRingParticles();
+      risingParticles = createRisingParticles(heart);
+
+      heartGroup.add(heart);
+      heartGroup.add(ringParticles);
+      heartGroup.add(risingParticles);
+      scene.add(heartGroup);
+
+      // Por defecto, estamos en auth/cake => mostrar torta/flores y ocultar corazón
+      setModeVisibility("auth");
+
+      window.addEventListener("resize", onWindowResize, false);
+    }
+
+    function setModeVisibility(mode) {
+      if (mode === "auth" || mode === "cake") {
+        cakeGroup.visible = true;
+        flowerGroup.visible = true;
+        heartGroup.visible = false;
+      } else if (mode === "heart") {
+        cakeGroup.visible = false;
+        flowerGroup.visible = false;
+        heartGroup.visible = true;
+      }
+    }
+
+    // se llamará desde loop cuando cambie currentMode
+    function syncVisibilityWithMode() {
+      setModeVisibility(currentMode);
+    }
+
+    /*************
+     *   TORTA   *
+     *************/
+    function createCake() {
+      const group = new THREE.Group();
+
+      // Plato
+      const plateGeo = new THREE.CylinderGeometry(2.2, 2.2, 0.15, 64);
+      const plateMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        metalness: 0.3,
+        roughness: 0.3
+      });
+      const plate = new THREE.Mesh(plateGeo, plateMat);
+      plate.position.y = -1.4;
+      group.add(plate);
+
+      // Capas de torta
+      const layerColors = [0xffb6e1, 0xff80c8, 0xffd6f2];
+      const radii = [1.8, 1.4, 1.0];
+      const heights = [0.6, 0.55, 0.45];
+      let currentY = -1.4 + 0.15 + heights[0] / 2;
+
+      for (let i = 0; i < 3; i++) {
+        const geo = new THREE.CylinderGeometry(radii[i], radii[i], heights[i], 64);
+        const mat = new THREE.MeshStandardMaterial({
+          color: layerColors[i],
+          metalness: 0.1,
+          roughness: 0.7
+        });
+        const layer = new THREE.Mesh(geo, mat);
+        layer.position.y = currentY;
+        group.add(layer);
+        if (i < 2) {
+          currentY += (heights[i] / 2 + heights[i + 1] / 2);
+        }
+      }
+
+      // Velas (19 → representadas con algunas velas)
+      const candleCount = 6;
+      const radius = 0.7;
+      for (let i = 0; i < candleCount; i++) {
+        const angle = (i / candleCount) * Math.PI * 2;
+        const cx = Math.cos(angle) * radius;
+        const cz = Math.sin(angle) * radius;
+
+        const candleGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.5, 16);
+        const candleMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const candle = new THREE.Mesh(candleGeo, candleMat);
+        candle.position.set(cx, currentY + 0.3, cz);
+        group.add(candle);
+
+        const flameGeo = new THREE.SphereGeometry(0.08, 16, 16);
+        const flameMat = new THREE.MeshStandardMaterial({
+          emissive: 0xffddaa,
+          emissiveIntensity: 1.5,
+          color: 0xfff5cc
+        });
+        const flame = new THREE.Mesh(flameGeo, flameMat);
+        flame.position.set(cx, currentY + 0.6, cz);
+        flame.userData.isFlame = true;
+        group.add(flame);
+      }
+
+      group.position.y = -0.1;
+      return group;
+    }
+
+    /**************
+     *   FLORES   *
+     **************/
+    function createFlowers() {
+      const group = new THREE.Group();
+
+      const stemMat = new THREE.MeshStandardMaterial({ color: 0x3fa34d });
+      const petalMat = new THREE.MeshStandardMaterial({ color: 0xff7fcf });
+
+      const flowerCount = 7;
+      for (let i = 0; i < flowerCount; i++) {
+        const stemGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.3, 12);
+        const stem = new THREE.Mesh(stemGeo, stemMat);
+        stem.position.y = -0.1;
+        stem.position.x = (Math.random() - 0.5) * 0.8;
+        stem.position.z = (Math.random() - 0.5) * 0.8;
+        stem.rotation.z = (Math.random() - 0.5) * 0.5;
+        group.add(stem);
+
+        const headGeo = new THREE.SphereGeometry(0.18, 14, 14);
+        const head = new THREE.Mesh(headGeo, petalMat);
+        head.position.copy(stem.position);
+        head.position.y += 0.7;
+        group.add(head);
+      }
+
+      group.position.y = 0.3;
+      group.position.x = -2.8;
+      group.position.z = -1.2;
+      return group;
+    }
+
+    /*****************
+     *   CORAZÓN     *
+     *****************/
+    function createHeartParticles() {
+      const numPoints = 13000;
+      const positions = new Float32Array(numPoints * 3);
+      let count = 0;
+
+      while (count < numPoints) {
+        const x = (Math.random() * 2 - 1) * 1.7;
+        const y = (Math.random() * 2 - 1) * 1.7;
+        const a = x * x + y * y - 1;
+        const value = a * a * a - x * x * y * y * y;
+        if (value <= 0) {
+          const z = (Math.random() * 2 - 1) * 0.7;
+          positions[count * 3]     = x * 0.85;
+          positions[count * 3 + 1] = y * 0.85 + 0.7;
+          positions[count * 3 + 2] = z * 0.65;
+          count++;
+        }
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+      heartMaterial = new THREE.PointsMaterial({
+        color: colorA.clone(),
+        size: 0.04,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.98
+      });
+
+      return new THREE.Points(geo, heartMaterial);
+    }
+
+    function createRingParticles() {
+      const count = 1800;
+      const positions = new Float32Array(count * 3);
+      const radiusOuter = 2.4;
+      const radiusInner = 1.0;
+
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = radiusInner + Math.random() * (radiusOuter - radiusInner);
+        const x = Math.cos(angle) * r;
+        const z = Math.sin(angle) * r;
+        const y = -1.25 + (Math.random() - 0.5) * 0.12;
+        positions[i * 3]     = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({
+        color: 0xff66cc,
+        size: 0.035,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.95
+      });
+
+      return new THREE.Points(geo, mat);
+    }
+
+    function createRisingParticles(heartPoints) {
+      const count = 650;
+      const positions = new Float32Array(count * 3);
+
+      const heartPositions = heartPoints.geometry.attributes.position.array;
+      const heartCount = heartPoints.geometry.attributes.position.count;
+
+      for (let i = 0; i < count; i++) {
+        const start = randomRingPosition();
+        const endIndex = Math.floor(Math.random() * heartCount) * 3;
+        const end = {
+          x: heartPositions[endIndex],
+          y: heartPositions[endIndex + 1],
+          z: heartPositions[endIndex + 2]
+        };
+
+        risingStart[i] = start;
+        risingEnd[i]   = end;
+        risingT[i]     = Math.random();
+
+        const p = lerpVec(start, end, risingT[i]);
+        positions[i * 3]     = p.x;
+        positions[i * 3 + 1] = p.y;
+        positions[i * 3 + 2] = p.z;
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({
+        color: 0xffa6e6,
+        size: 0.03,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.9
+      });
+
+      return new THREE.Points(geo, mat);
+    }
+
+    function randomRingPosition() {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 1.2 + Math.random() * 1.5;
+      return {
+        x: Math.cos(angle) * r,
+        y: -1.25,
+        z: Math.sin(angle) * r
+      };
+    }
+
+    function lerpVec(a, b, t) {
+      const tt = t * t * (3 - 2 * t);
+      return {
+        x: a.x + (b.x - a.x) * tt,
+        y: a.y + (b.y - a.y) * tt,
+        z: a.z + (b.z - a.z) * tt
+      };
+    }
+
+    function createStarfield() {
+      const num = 2600;
+      const positions = new Float32Array(num * 3);
+      for (let i = 0; i < num; i++) {
+        const i3 = i * 3;
+        positions[i3]     = (Math.random() - 0.5) * 80;
+        positions[i3 + 1] = (Math.random() - 0.5) * 80;
+        positions[i3 + 2] = (Math.random() - 0.5) * 80;
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.02,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.7
+      });
+      return new THREE.Points(geo, mat);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    /************
+     *  LOOP    *
+     ************/
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+      const t  = clock.getElapsedTime();
+
+      syncVisibilityWithMode();
+
+      // Estrellas de fondo
+      stars.rotation.y = t * 0.02;
+
+      // Animación torta + flores
+      if (cakeGroup.visible) {
+        cakeGroup.rotation.y = Math.sin(t * 0.3) * 0.15;
+
+        // llamas de las velas
+        cakeGroup.children.forEach(obj => {
+          if (obj.userData.isFlame) {
+            obj.position.y += Math.sin(t * 8 + obj.position.x * 3) * 0.003;
+          }
+        });
+
+        flowerGroup.rotation.y = Math.sin(t * 0.25) * 0.25;
+      }
+
+      // Animación corazón
+      if (heartGroup.visible) {
+        const beat = 0.5 + 0.5 * Math.sin(t * 2.6);
+        const scale = 1.0 + beat * 0.09;
+        heart.scale.set(scale, scale, scale);
+        heart.rotation.y = t * 0.4;
+        heart.rotation.z = Math.sin(t * 0.35) * 0.12;
+        heartMaterial.color.copy(colorA).lerp(colorB, beat);
+
+        const ringSpeed = 0.7;
+        ringParticles.rotation.y = t * ringSpeed;
+
+        const angle = t * ringSpeed;
+        const baseTransform = (extra = 0) =>
+          `rotateX(75deg) rotateZ(${angle + extra}rad)`;
+        ringOuter.style.transform  = baseTransform(0);
+        ringMiddle.style.transform = baseTransform(0.15);
+        ringInner.style.transform  = baseTransform(0.3);
+
+        const posAttr = risingParticles.geometry.attributes.position;
+        for (let i = 0; i < risingT.length; i++) {
+          risingT[i] += dt * 0.36;
+          if (risingT[i] >= 1) {
+            const hp = heart.geometry.attributes.position.array;
+            const hc = heart.geometry.attributes.position.count;
+            const endIndex = Math.floor(Math.random() * hc) * 3;
+            risingStart[i] = randomRingPosition();
+            risingEnd[i] = {
+              x: hp[endIndex],
+              y: hp[endIndex + 1],
+              z: hp[endIndex + 2]
+            };
+            risingT[i] = 0;
+          }
+          const p = lerpVec(risingStart[i], risingEnd[i], risingT[i]);
+          posAttr.setXYZ(i, p.x, p.y, p.z);
+        }
+        posAttr.needsUpdate = true;
+      }
+
+      renderer.render(scene, camera);
+    }
+    /****************************
+ *   AUTOPLAY + PLAY/PAUSE  *
+ ****************************/
+const musicBtn = document.getElementById("musicToggle");
+
+let musicActivated = false;
+
+// Al primer clic en cualquier parte → activa la música automáticamente
+document.addEventListener("click", function startMusicOnce() {
+  if (!musicActivated) {
+    bgMusic.volume = 0.8; // más suave
+    bgMusic.play().catch(() => {});
+    musicActivated = true;
+    musicBtn.textContent = "🔊"; // icono sonido ON
+  }
+  document.removeEventListener("click", startMusicOnce);
+});
+
+// Control Play / Pause
+musicBtn.addEventListener("click", () => {
+  if (bgMusic.paused) {
+    bgMusic.play();
+    musicBtn.textContent = "🔊";
+  } else {
+    bgMusic.pause();
+    musicBtn.textContent = "🔇";
+  }
+});
+
+  </script>
+</body>
+</html>
