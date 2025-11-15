@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>QR Romántico</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #000000;
+    }
+
+    .wrapper {
+      text-align: center;
+      padding: 24px;
+    }
+
+    .qr-card {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      border-radius: 32px;
+      border: 8px solid #ff8ccf;
+      background: #ffffff;
+      box-shadow: 0 0 40px rgba(255, 140, 207, 0.45);
+    }
+
+    #qrcode {
+      width: 260px;
+      height: 260px;
+    }
+
+    /* Corazón en el centro */
+    .heart-overlay {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: #ff4fa9;
+      box-shadow: 0 0 18px rgba(0,0,0,0.15);
+      pointer-events: none;
+    }
+
+    .caption-main {
+      margin-top: 18px;
+      font-size: 1.1rem;
+    }
+
+    .caption-sub {
+      margin-top: 4px;
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+
+    .hint {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      opacity: 0.75;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="qr-card">
+      <div id="qrcode"></div>
+      <div class="heart-overlay">❤</div>
+    </div>
+
+    <div class="caption-main">Escanéame, amorcito ❤️</div>
+  </div>
+
+  <!-- Librería para generar QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    // URL de tu sorpresa
+    const urlSorpresa = "https://felizcumple19.netlify.app/";
+
+    // Generar el QR real
+    new QRCode(document.getElementById("qrcode"), {
+      text: urlSorpresa,
+      width: 260,
+      height: 260,
+      colorDark: "#ff4fa9",   // rosa fuerte
+      colorLight: "#ffffff",  // fondo blanco
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  </script>
+</body>
+</html>
