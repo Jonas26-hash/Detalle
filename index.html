@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feliz cumpleaños, amorcito</title>
   <style>
     * {
@@ -40,7 +41,6 @@
       display: flex;
     }
 
-    /* Contenedores de contenido (para permitir clics) */
     .screen-content {
       pointer-events: auto;
       text-align: center;
@@ -202,7 +202,7 @@
       bottom: 50px;
       left: 50%;
       transform: translateX(-50%);
-      display: none; /* sólo en pantalla corazón */
+      display: none;
       align-items: center;
       justify-content: center;
       width: 320px;
@@ -272,50 +272,43 @@
       margin-top: 4px;
     }
 
-    /* Audio (lo dejamos discreto) */
-    .audio-control {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 4;
-      opacity: 0.8;
-    }
+    /* BOTÓN DE MÚSICA */
     .music-btn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  background: linear-gradient(135deg, #ff4fa9, #ffc0ff);
-  border: none;
-  border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  color: #000;
-  font-size: 1.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 0 18px rgba(255, 79, 169, 0.6);
-  transition: 0.2s ease;
-}
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: linear-gradient(135deg, #ff4fa9, #ffc0ff);
+      border: none;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      color: #000;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(255, 79, 169, 0.6);
+      transition: 0.2s ease;
+    }
 
-.music-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 25px rgba(255, 79, 169, 0.9);
-}
-
+    .music-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(255, 79, 169, 0.9);
+    }
   </style>
 </head>
 <body>
   <div id="scene-container"></div>
 
-  <!-- Control de música (pondrás tu archivo de Photograph aquí) -->
-  <!-- Debes tener un archivo MP3 en la misma carpeta, por ejemplo "photograph.mp3" -->
+  <!-- AUDIO (asegúrate de que el archivo se llame exactamente Photograph.mp3) -->
   <audio id="bgMusic" loop preload="auto">
-  <source src="photograph.mp3" type="audio/mpeg">
-</audio>
-<button id="musicToggle" class="music-btn">🔊</button>
+    <source src="Photograph.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Botón personalizado de música -->
+  <button id="musicToggle" class="music-btn">🔊</button>
 
   <!-- PANTALLA 1: AUTENTICACIÓN ROMÁNTICA -->
   <div id="screen-auth" class="screen active">
@@ -346,7 +339,7 @@
     </div>
   </div>
 
-  <!-- PANTALLA 2: TORTA + FLORES + TEXTO BONITO -->
+  <!-- PANTALLA 2: TORTA + FLORES -->
   <div id="screen-cake" class="screen">
     <div class="screen-content cake-content">
       <h2>Hoy celebramos tu día, mi amor… 🎂✨</h2>
@@ -361,19 +354,19 @@
     </div>
   </div>
 
-  <!-- PANTALLA 3: CORAZÓN DE PARTÍCULAS -->
+  <!-- PANTALLA 3: CORAZÓN -->
   <div id="screen-heart" class="screen">
     <div class="screen-content heart-content">
-      <h2>Este es mi corazón, hecho de un “te amo” 💓</h2>
+      <h2>Este es mi corazón, hecho de “te amo” 💓</h2>
       <p class="heart-text">
         Cada partícula que ves es un sentimiento, un pensamiento,<br>
         un recuerdo bonito contigo. Y todos suben para llenar este corazón<br>
-        que, desde que te conocí, late diferente. Te amo Yameli 💗
+        que, desde que te conocí, late diferente. Te amo Yameli💗
       </p>
     </div>
   </div>
 
-  <!-- Remolino de texto para la pantalla final -->
+  <!-- TEXTO REMOLINO -->
   <div class="ring-text-container" id="ringTextContainer">
     <div class="ring-text ring-text-outer" id="ringTextOuter">
       TE AMO • TE AMO • TE AMO • TE AMO • TE AMO • TE AMO •
@@ -414,9 +407,10 @@
     const ringContainer = document.getElementById("ringTextContainer");
     const ringOuter = document.getElementById("ringTextOuter");
     const ringMiddle = document.getElementById("ringTextMiddle");
-    const ringInner = document.getElementById("ringTextInner");
+    const ringInner  = document.getElementById("ringTextInner");
 
     const bgMusic = document.getElementById("bgMusic");
+    const musicBtn = document.getElementById("musicToggle");
 
     let currentMode = "auth"; // auth | cake | heart
 
@@ -441,7 +435,7 @@
       return str
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")  // quita acentos
+        .replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-z0-9]+/g, " ")
         .trim();
     }
@@ -457,7 +451,6 @@
 
       if (okMonth && okAnimal && okKeyword) {
         authMessage.textContent = "Sabía que eras tú 🥹💖, bienvenida a tu sorpresa...";
-        // reproducimos música (el navegador solo dejará si ya hubo interacción)
         bgMusic.play().catch(() => {});
         setTimeout(() => {
           showScreen("cake");
@@ -490,6 +483,32 @@
 
     btnReplayAuth.addEventListener("click", () => {
       showScreen("auth");
+    });
+
+    /****************************
+     *   AUTOPLAY + PLAY/PAUSE  *
+     ****************************/
+    let musicActivated = false;
+
+    // Primer clic en cualquier parte → intenta reproducir la música
+    document.addEventListener("click", function startMusicOnce() {
+      if (!musicActivated) {
+        bgMusic.volume = 0.8;
+        bgMusic.play().catch(() => {});
+        musicActivated = true;
+        musicBtn.textContent = "🔊";
+      }
+      document.removeEventListener("click", startMusicOnce);
+    });
+
+    musicBtn.addEventListener("click", () => {
+      if (bgMusic.paused) {
+        bgMusic.play().catch(() => {});
+        musicBtn.textContent = "🔊";
+      } else {
+        bgMusic.pause();
+        musicBtn.textContent = "🔇";
+      }
     });
 
     /********************
@@ -557,7 +576,7 @@
       heartGroup.add(risingParticles);
       scene.add(heartGroup);
 
-      // Por defecto, estamos en auth/cake => mostrar torta/flores y ocultar corazón
+      // Por defecto: auth/cake -> mostrar torta/flores
       setModeVisibility("auth");
 
       window.addEventListener("resize", onWindowResize, false);
@@ -575,7 +594,6 @@
       }
     }
 
-    // se llamará desde loop cuando cambie currentMode
     function syncVisibilityWithMode() {
       setModeVisibility(currentMode);
     }
@@ -586,7 +604,6 @@
     function createCake() {
       const group = new THREE.Group();
 
-      // Plato
       const plateGeo = new THREE.CylinderGeometry(2.2, 2.2, 0.15, 64);
       const plateMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
@@ -597,7 +614,6 @@
       plate.position.y = -1.4;
       group.add(plate);
 
-      // Capas de torta
       const layerColors = [0xffb6e1, 0xff80c8, 0xffd6f2];
       const radii = [1.8, 1.4, 1.0];
       const heights = [0.6, 0.55, 0.45];
@@ -618,7 +634,6 @@
         }
       }
 
-      // Velas (19 → representadas con algunas velas)
       const candleCount = 6;
       const radius = 0.7;
       for (let i = 0; i < candleCount; i++) {
@@ -841,14 +856,11 @@
 
       syncVisibilityWithMode();
 
-      // Estrellas de fondo
       stars.rotation.y = t * 0.02;
 
-      // Animación torta + flores
       if (cakeGroup.visible) {
         cakeGroup.rotation.y = Math.sin(t * 0.3) * 0.15;
 
-        // llamas de las velas
         cakeGroup.children.forEach(obj => {
           if (obj.userData.isFlame) {
             obj.position.y += Math.sin(t * 8 + obj.position.x * 3) * 0.003;
@@ -858,7 +870,6 @@
         flowerGroup.rotation.y = Math.sin(t * 0.25) * 0.25;
       }
 
-      // Animación corazón
       if (heartGroup.visible) {
         const beat = 0.5 + 0.5 * Math.sin(t * 2.6);
         const scale = 1.0 + beat * 0.09;
@@ -900,35 +911,6 @@
 
       renderer.render(scene, camera);
     }
-    /****************************
- *   AUTOPLAY + PLAY/PAUSE  *
- ****************************/
-const musicBtn = document.getElementById("musicToggle");
-
-let musicActivated = false;
-
-// Al primer clic en cualquier parte → activa la música automáticamente
-document.addEventListener("click", function startMusicOnce() {
-  if (!musicActivated) {
-    bgMusic.volume = 0.8; // más suave
-    bgMusic.play().catch(() => {});
-    musicActivated = true;
-    musicBtn.textContent = "🔊"; // icono sonido ON
-  }
-  document.removeEventListener("click", startMusicOnce);
-});
-
-// Control Play / Pause
-musicBtn.addEventListener("click", () => {
-  if (bgMusic.paused) {
-    bgMusic.play();
-    musicBtn.textContent = "🔊";
-  } else {
-    bgMusic.pause();
-    musicBtn.textContent = "🔇";
-  }
-});
-
   </script>
 </body>
 </html>
